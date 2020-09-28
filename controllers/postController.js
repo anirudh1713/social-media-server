@@ -16,14 +16,14 @@ exports.addPost = async (req, res, next) => {
       const blob = bucket.file(`post_images/${user.user_id}_${Date.now()}`);
       const blobWriter = blob.createWriteStream({
         metadata: {
-          ContentType: req.file.mimeType
+          contentType: req.file.mimetype
         }
       });
       blobWriter.on('error', (e) => {
         throw new Error('could not upload image');
       });
       blobWriter.on('finish', () => {
-        const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/post_images%2F%${encodeURI(bucket.name.split('/')[1])}?alt=media`;
+        const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/post_images%2F${encodeURI(blob.name.split('/')[1])}?alt=media`;
         //add post to db
         if (description) {
           description = description.trim();
