@@ -73,8 +73,9 @@ exports.editPost = async (req, res, next) => {
     description = description.trim();
     const postId = req.params.id;
     const post = await Post.findByPk(postId);
+    if (!post) res.status(404).send({ error: 'post not found' });
     const userId = post.userUserId;
-    if (userId !== user.user_id) throw Error('invalid user');
+    if (userId !== user.user_id) res.status(401).send({ error: 'invalid user' });
     const updatedPost = await Post.update({ description } ,{ where: { post_id: postId } });
     res.send({ post: updatedPost });
   } catch (e) {
