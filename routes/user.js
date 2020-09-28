@@ -1,4 +1,6 @@
 const express = require('express');
+const multer = require('multer');
+const auth = require('../middlewares/auth');
 
 const route = new express.Router();
 
@@ -13,5 +15,25 @@ route.post('/signup', usersController.signUpUser);
 
 //user login
 route.post('/login', usersController.loginUser);
+
+//profile photo
+const upload = new multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 1 * 1024 * 1024
+  },
+  fileFilter: function(req, file, cb) {
+    if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){
+      return cb(new Error('please upload image only'));
+    }
+    cb(undefined, true);
+  }
+});
+
+//user add profileimage
+route.patch('/user/profileimage', auth, upload.single('profileImage'), usersController.addProfileImage);
+
+//get one user by id
+route.get('/user/:id', auth, usersController.getUserData);
 
 module.exports = route;

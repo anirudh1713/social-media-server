@@ -8,21 +8,20 @@ const comment = sequelize.define('comment', {
         autoIncrement: true,
         primaryKey: true
     },
-    //TODO - SHOULD NOT BE ALPHANUMERIC
-    //TODO - LIKE DISLIKE DEFAULT VALUE TO 0
     description: {
         type: Sequelize.TEXT,
         allowNull: false,
         validate: {
-            notEmpty: true,
-            isAlphanumeric: true
+            notEmpty: true
         }
     },
     likes: {
-        type:Sequelize.INTEGER
+        type:Sequelize.INTEGER,
+        defaultValue: 0
     },
     dislikes: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0
     }
 });
 

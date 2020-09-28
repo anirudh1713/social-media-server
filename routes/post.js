@@ -1,11 +1,25 @@
 const express = require('express');
+const multer = require('multer');
+
 const auth = require('../middlewares/auth');
 const postController = require('../controllers/postController');
 
 const route = new express.Router();
 
+const upload = new multer({
+  limits: {
+    fileSize: 1 * 1024 * 1024
+  },
+  fileFilter: function (req, file, cb) {
+    if(!file.originalname.match(/\.(jpeg|jpg|png)$/)) {
+      cb(undefined, false);
+    }
+    cb(undefined, true);
+  }
+});
+
 //add post (ONLY AUTHENTICATED USER)
-route.post('/post', auth, postController.addPost);
+route.post('/post', auth, upload.single('post_image'), postController.addPost);
 
 //delte post (ONLY AUTHENTICATED USER)
 route.delete('/post/:id', auth, postController.deletePost);
