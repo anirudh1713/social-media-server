@@ -49,7 +49,7 @@ app.use(postRoute);
 app.use(commentRoute);
 
 //server start
-sequelize.sync().then(res => {
+sequelize.sync({ force: false }).then(res => {
     app.listen(port, (err) => {
         if (err) throw err;
 

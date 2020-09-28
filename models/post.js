@@ -12,13 +12,15 @@ const post = sequelize.define('post' , {
         type: Sequelize.TEXT
     },
     picture: {
-        type: Sequelize.BLOB('long')
+        type: Sequelize.STRING
     },
     likes: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0
     },
     dislikes: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0
     }
 });
 

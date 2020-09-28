@@ -39,7 +39,7 @@ const user = sequelize.define('user', {
         type: Sequelize.DATE
     },
     profile_photo: {
-        type: Sequelize.BLOB('long')
+        type: Sequelize.STRING
     }
 });
 

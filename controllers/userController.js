@@ -48,3 +48,53 @@ exports.loginUser = async (req, res, next) => {
         res.status(400).send({ error: e.message });
     }
 };
+
+//code for profile image
+const { Storage } = require('@google-cloud/storage');
+const storage = new Storage({
+    projectId: process.env.GCLOUD_PROJECT_ID,
+    keyFilename: process.env.GCLOUD_APPLICATION_CREDENTIALS
+});
+const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET_URL_PROFILE);
+//profile image add
+exports.addProfileImage = async (req, res, next) => {
+    try {
+        if (!req.file) res.status(400).send('no file found');
+        //name the file
+        const blob = bucket.file(`profile_images/${req.user.user_id}`);
+        //create blob in bucket referencing the file
+        const blobWriter = blob.createWriteStream({
+            metadata: {
+                contentType: req.file.mimetype
+            }
+        });
+        blobWriter.on('error', (err) => {
+            console.log(err);
+        });
+        blobWriter.on('finish', () => {
+            const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/profile_images%2F${encodeURI(blob.name.split('/')[1])}?alt=media`;
+            req.user.update({ profile_photo: url }).then(response => {
+                res.send({ profile_url: url });
+            }).catch(e => {
+                console.log(e);
+                res.status(500).send({ error: e.message });
+            });
+        });
+        blobWriter.end(req.file.buffer);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({ error: e.message });
+    }
+};
+
+//get single user by id
+exports.getUserData = async (req, res, next) => {
+    try {
+        const user = await User.findByPk(req.params.id);
+        if (!user) res.status(404).send({ error: 'user not found' });
+        res.send({ user });
+    } catch(e) {
+        console.log(e);
+        res.status(500).send({ error: e.message });
+    }
+};
