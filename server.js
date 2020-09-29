@@ -12,22 +12,28 @@ const port = process.env.PORT || 30001;
 const userRoute = require('./routes/user');
 const postRoute = require('./routes/post');
 const commentRoute = require('./routes/comment');
+const friendRoute = require('./routes/friend');
 
 //model imports
 const User = require('./models/user');
 const Post = require('./models/post');
 const Comment = require('./models/comment');
-const Jwttokne = require('./models/jwttoken');
+const Jwttoken = require('./models/jwttoken');
+const Friend = require('./models/friend');
 
 //-------START model relations----------
+
+//user-friend
+User.belongsToMany(User, { through: Friend, as: 'requester', foreignKey: 'requester_id' });
+User.belongsToMany(User, { through: Friend, as: 'receiver', foreignKey: 'receiver_id' });
 
 //user-post
 User.hasMany(Post);
 Post.belongsTo(User);
 
 //user-token
-User.hasMany(Jwttokne);
-Jwttokne.belongsTo(User);
+User.hasMany(Jwttoken);
+Jwttoken.belongsTo(User);
 
 //user-comment
 User.hasMany(Comment);
@@ -47,12 +53,12 @@ app.use(cors());
 app.use(userRoute);
 app.use(postRoute);
 app.use(commentRoute);
+app.use(friendRoute);
 
 //server start
 sequelize.sync({ force: false }).then(res => {
     app.listen(port, (err) => {
         if (err) throw err;
-
         console.log(`---- Server sterted on port ${port} ----`);
     });
 }).catch(err => {
