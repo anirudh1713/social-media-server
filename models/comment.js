@@ -16,12 +16,10 @@ const comment = sequelize.define('comment', {
         }
     },
     likes: {
-        type:Sequelize.INTEGER,
-        defaultValue: 0
+        type:Sequelize.ARRAY(Sequelize.INTEGER)
     },
     dislikes: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
+        type:Sequelize.ARRAY(Sequelize.INTEGER),
     }
 });
 
