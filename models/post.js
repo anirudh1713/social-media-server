@@ -15,12 +15,12 @@ const post = sequelize.define('post' , {
         type: Sequelize.STRING
     },
     likes: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
+        type:Sequelize.ARRAY(Sequelize.INTEGER),
+        defaultValue: []
     },
     dislikes: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
+        type:Sequelize.ARRAY(Sequelize.INTEGER),
+        defaultValue: []
     }
 });
 

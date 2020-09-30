@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 exports.addNewFriend = async (req, res, next) => {
   try {
     const { user } = req;
+    if (req.params.id == user.user_id) return res.status(400).send({ error: 'can not self friend' });
     const response = await Friend.findAll({ where: { requester_id: req.params.id, receiver_id: user.user_id } });
     if (response.length > 0) return res.status(400).send({ error: 'already exist' });
     await user.addRequester(req.params.id);

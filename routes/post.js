@@ -30,6 +30,12 @@ route.patch('/post/:id', auth, postController.editPost);
 //get a post BY ID
 route.get('/post/:id', postController.getPost);
 
+//like a post BY POST ID
+route.post('/post/like/:postId', auth, postController.likePost);
+
+//dislike a post BY POST ID
+route.post('/post/dislike/:postId', auth, postController.dislikePost);
+
 //TODO - RETURN POST FOR A PAGE (PAGINATION)
 
 module.exports = route;

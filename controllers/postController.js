@@ -54,6 +54,7 @@ exports.deletePost = async (req, res, next) => {
     const { user } = req;
     const postId = req.params.id;
     const post = await Post.findByPk(postId);
+    if (!post) return res.status(404).send({ error: 'post not found' });
     const userId = post.userUserId;
     if (userId !== user.user_id) throw Error('invalid user');
     await Post.destroy({ where: { post_id: postId } });
@@ -93,5 +94,47 @@ exports.getPost = async (req, res, next) => {
   } catch (e) {
     console.log(e);
     res.status(400).send({ error: e.message });
+  }
+};
+
+//like post
+exports.likePost = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const post = await Post.findByPk(req.params.postId);
+    if (!post) return res.status(404).send({ error: 'post not found' });
+    if (post.likes.includes(user.user_id)) return res.status(400).send({ error: 'already liked' });
+    if (post.dislikes.includes(user.user_id)) {
+      post.dislikes = post.dislikes.filter(id => {
+        return id !== user.user_id;
+      });
+    }
+    post.likes = [...post.likes, user.user_id];
+    const updatedPost = await post.save();
+    res.send({ post: updatedPost })
+  }catch (e) {
+    console.log(e);
+    res.status(500).send({ error: e.message });
+  }
+};
+
+//dislike a post
+exports.dislikePost = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const post = await Post.findByPk(req.params.postId);
+    if (!post) return res.status(404).send({ error: 'post not found' });
+    if (post.dislikes.includes(user.user_id)) return res.status(400).send({ error: 'already disliked' });
+    if (post.likes.includes(user.user_id)) {
+      post.likes = post.likes.filter(id => {
+        return id !== user.user_id;
+      });
+    }
+    post.dislikes = [...post.dislikes, user.user_id];
+    const updatedPost = await post.save();
+    res.send({ post: updatedPost });
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({ error: e.message });
   }
 };
