@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 //get all users -- NO AUTH
 exports.getAllUsers = async (req, res, next) => {
     try {
-        const users = await User.findAll();
+        const users = await User.findAll( );
         if (!users) throw new Error('no users found');
         res.send(users);
     }catch (e) {
