@@ -32,7 +32,7 @@ const user = sequelize.define('user', {
     gender: {
         type: Sequelize.STRING(1),
         validate: {
-            is: /M|F/i
+            is: /M|F|O/i
         }
     },
     dob: {

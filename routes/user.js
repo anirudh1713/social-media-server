@@ -14,7 +14,7 @@ route.get('/users', usersController.getAllUsers);
 route.post('/signup', usersController.signUpUser);
 
 //user login
-route.post('/login', usersController.loginUser);
+route.post('/signin', usersController.loginUser);
 
 //profile photo
 const upload = new multer({
@@ -35,5 +35,8 @@ route.patch('/user/profileimage', auth, upload.single('profileImage'), usersCont
 
 //get one user by id
 route.get('/user/:id', auth, usersController.getUserData);
+
+//logout user
+route.post('/user/logout', auth, usersController.logoutUser);
 
 module.exports = route;

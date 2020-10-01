@@ -1,6 +1,7 @@
 const User =  require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Jwttoken = require('../models/jwttoken');
 
 //get all users -- NO AUTH
 exports.getAllUsers = async (req, res, next) => {
@@ -94,6 +95,18 @@ exports.getUserData = async (req, res, next) => {
         if (!user) res.status(404).send({ error: 'user not found' });
         res.send({ user });
     } catch(e) {
+        console.log(e);
+        res.status(500).send({ error: e.message });
+    }
+};
+
+//log out user
+exports.logoutUser = async (req, res, next) => {
+    try {
+        const { user, token } = req;
+        await Jwttoken.destroy({ where: { userUserId: user.user_id, jwttoken: token } });
+        res.send();
+    } catch (e) {
         console.log(e);
         res.status(500).send({ error: e.message });
     }
