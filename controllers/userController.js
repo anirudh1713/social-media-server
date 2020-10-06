@@ -62,7 +62,7 @@ exports.addProfileImage = async (req, res, next) => {
     try {
         if (!req.file) res.status(400).send('no file found');
         //name the file
-        const blob = bucket.file(`profile_images/${req.user.user_id}`);
+        const blob = bucket.file(`profile_images/${req.user.user_id}_${req.file.originalname}`);
         //create blob in bucket referencing the file
         const blobWriter = blob.createWriteStream({
             metadata: {

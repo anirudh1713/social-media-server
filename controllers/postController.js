@@ -1,5 +1,6 @@
 const Post = require('../models/post');
 const User = require('../models/user');
+const Comment = require('../models/comment');
 const { Storage } = require('@google-cloud/storage');
 
 //add a post
@@ -13,14 +14,14 @@ exports.addPost = async (req, res, next) => {
         keyFilename: process.env.GCLOUD_APPLICATION_CREDENTIALS
       });
       const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET_URL_PROFILE);
-      const blob = bucket.file(`post_images/${user.user_id}_${Date.now()}`);
+      const blob = bucket.file(`post_images/${user.user_id}_${Date.now()}_${req.file.originalname}`);
       const blobWriter = blob.createWriteStream({
         metadata: {
           contentType: req.file.mimetype
         }
       });
       blobWriter.on('error', (e) => {
-        throw new Error('could not upload image');
+        res.status(500).send({ error: e });
       });
       blobWriter.on('finish', () => {
         const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/post_images%2F${encodeURI(blob.name.split('/')[1])}?alt=media`;
@@ -28,8 +29,12 @@ exports.addPost = async (req, res, next) => {
         if (description) {
           description = description.trim();
         }
+        
+        //CREATE POST AND RETURN WITH POST INCLUDING COMMENTS AND USER INFO
         user.createPost({ description, picture: url }).then(response => {
-          res.status(201).send(response);
+          return Post.findByPk(response.post_id, { include: [Comment, User] });
+        }).thne(postWithData => {
+          res.status(201).send(postWithData);
         }).catch(err => {
           console.log(err);
           res.status(500).send({ error: err.message });
@@ -39,8 +44,11 @@ exports.addPost = async (req, res, next) => {
     } else {
       if (!req.body.description) res.status(400).send({ error: 'add image or description' });
       description = description.trim();
+
+      //CREATE POST AND RETURN WITH POST INCLUDING COMMENTS AND USER INFO
       const post = await user.createPost({ description });
-      res.status(201).send(post);
+      const postWithData = await Post.findByPk(post.post_id, { include: [Comment, User] });
+      res.status(201).send(postWithData);
     }
   } catch (e) {
     console.log(e);
@@ -136,5 +144,31 @@ exports.dislikePost = async (req, res, next) => {
   } catch (e) {
     console.log(e);
     res.status(500).send({ error: e.message });
+  }
+};
+
+//get posts of a particular user
+exports.getAllPostsUser = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findByPk(userId);
+    if (!user) res.status(404).send({ error: 'user not found' });
+    const posts = await user.getPosts();
+    res.send({ posts });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error });
+  }
+};
+
+//get all posts
+exports.getAllPosts = async (req, res, next) => {
+  try {
+    const posts = await Post.findAll({ include: [Comment, User] });
+    if (!posts) res.status(404).send({ error: 'posts not found' });
+    res.send({ posts });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error: error.message });
   }
 };

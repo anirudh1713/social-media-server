@@ -36,6 +36,10 @@ route.post('/post/like/:postId', auth, postController.likePost);
 //dislike a post BY POST ID
 route.post('/post/dislike/:postId', auth, postController.dislikePost);
 
+//get all posts of a particular user by user ID
+route.get('/post/user/:id', auth, postController.getAllPostsUser);
+
 //TODO - RETURN POST FOR A PAGE (PAGINATION)
+route.get('/posts', auth, postController.getAllPosts);
 
 module.exports = route;
