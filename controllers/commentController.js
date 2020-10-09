@@ -10,7 +10,8 @@ exports.addComment = async (req, res, next) => {
     description = description.trim();
     const post = await Post.findByPk(req.params.id);
     if (!post) res.status(404).send({ error: 'post not found' });
-    const comment = await user.createComment({ description, postPostId: req.params.id });
+    let comment = await user.createComment({ description, postPostId: req.params.id });
+    comment = await Comment.findByPk(comment.comment_id, { include: [User] });
     res.status(201).send({ comment });
   } catch (e) {
     console.log(e);

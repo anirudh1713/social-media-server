@@ -33,7 +33,7 @@ exports.addPost = async (req, res, next) => {
         //CREATE POST AND RETURN WITH POST INCLUDING COMMENTS AND USER INFO
         user.createPost({ description, picture: url }).then(response => {
           return Post.findByPk(response.post_id, { include: [Comment, User] });
-        }).thne(postWithData => {
+        }).then(postWithData => {
           res.status(201).send(postWithData);
         }).catch(err => {
           console.log(err);
@@ -41,8 +41,8 @@ exports.addPost = async (req, res, next) => {
         });
       });
       blobWriter.end(req.file.buffer);
-    } else {
-      if (!req.body.description) res.status(400).send({ error: 'add image or description' });
+    }else {
+      if (!req.body.description) return res.status(400).send({ error: 'add image or description' });
       description = description.trim();
 
       //CREATE POST AND RETURN WITH POST INCLUDING COMMENTS AND USER INFO
@@ -52,7 +52,7 @@ exports.addPost = async (req, res, next) => {
     }
   } catch (e) {
     console.log(e);
-    res.status(500).send({ error: e.message });
+    res.status(500).send({ error: e });
   }
 };
 
@@ -111,7 +111,15 @@ exports.likePost = async (req, res, next) => {
     const { user } = req;
     const post = await Post.findByPk(req.params.postId);
     if (!post) return res.status(404).send({ error: 'post not found' });
-    if (post.likes.includes(user.user_id)) return res.status(400).send({ error: 'already liked' });
+    if (post.likes.includes(user.user_id)){
+      //return res.status(400).send({ error: 'already liked' });
+
+      post.likes = post.likes.filter(id => {
+        return id !== user.user_id;
+      });
+      const updatedPost = await post.save();
+      return res.send({ post: updatedPost });
+    } 
     if (post.dislikes.includes(user.user_id)) {
       post.dislikes = post.dislikes.filter(id => {
         return id !== user.user_id;
@@ -132,7 +140,15 @@ exports.dislikePost = async (req, res, next) => {
     const { user } = req;
     const post = await Post.findByPk(req.params.postId);
     if (!post) return res.status(404).send({ error: 'post not found' });
-    if (post.dislikes.includes(user.user_id)) return res.status(400).send({ error: 'already disliked' });
+    if (post.dislikes.includes(user.user_id)){
+      //return res.status(400).send({ error: 'already disliked' });
+
+      post.dislikes = post.dislikes.filter(id => {
+        return id !== user.user_id;
+      });
+      const updatedPost = await post.save();
+      return res.send({ post: updatedPost });
+    }
     if (post.likes.includes(user.user_id)) {
       post.likes = post.likes.filter(id => {
         return id !== user.user_id;
@@ -164,7 +180,7 @@ exports.getAllPostsUser = async (req, res, next) => {
 //get all posts
 exports.getAllPosts = async (req, res, next) => {
   try {
-    const posts = await Post.findAll({ include: [Comment, User] });
+    const posts = await Post.findAll({ include: { all: true, nested: true } });
     if (!posts) res.status(404).send({ error: 'posts not found' });
     res.send({ posts });
   } catch (error) {
