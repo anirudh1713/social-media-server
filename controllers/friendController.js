@@ -7,27 +7,40 @@ exports.addNewFriend = async (req, res, next) => {
   try {
     const { user } = req;
     if (req.params.id == user.user_id) return res.status(400).send({ error: 'can not self friend' });
-    const response = await Friend.findAll({ where: { requester_id: req.params.id, receiver_id: user.user_id } });
+    const response = await Friend.findAll({ where: { userUserId: req.params.id, receiverUserId: user.user_id } });
     if (response.length > 0) return res.status(400).send({ error: 'already exist' });
-    await user.addRequester(req.params.id);
-    res.status(201).send();
+    const request = await user.addReceiver(req.params.id);
+    res.status(201).send({ request });
   } catch (e) {
     console.log(e);
     res.status(500).send({ error: e.message });
   }
-}
+};
 
 //get all pending requests
 exports.getAllPendingRequests = async (req, res, next) => {
   try {
     const { user } = req;
-    const pendingRequests = await Friend.findAll({ where: { receiver_id: user.user_id, status: 'P' } });
+    const pendingRequests = await Friend.findAll({ where: { receiverUserId: user.user_id, status: 'P' }, include: { all: true } });
+    if (!pendingRequests) res.status(404).send({ error: 'No pending requests' });
     res.send({ pendingRequests });
   } catch (e) {
     console.log(e);
     res.status(500).send({ error: e.message });
   }
-}
+};
+
+exports.getAllSentRequest = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const sentRequest = await Friend.findAll({ where: { userUserId: user.user_id, status: 'P' } });
+    if (!sentRequest) res.status(404).send({ error: 'no requests found' });
+    res.send({ sentRequest });
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({ error: e.message });
+  }
+};
 
 //accept friend request
 exports.acceptReq = async (req, res, next) => {
@@ -35,8 +48,8 @@ exports.acceptReq = async (req, res, next) => {
     const { user } = req;
     const reqToAccept = await Friend.findOne({
       where: {
-        receiver_id: user.user_id,
-        requester_id: req.params.reqId,
+        receiverUserId: user.user_id,
+        userUserId: req.params.reqId,
         status: 'P'
       }
     });
@@ -48,7 +61,7 @@ exports.acceptReq = async (req, res, next) => {
     console.log(e);
     res.status(500).send({ error: e.message });
   }
-}
+};
 
 //reject friend request
 exports.rejectReq = async (req, res, next) => {
@@ -56,8 +69,8 @@ exports.rejectReq = async (req, res, next) => {
     const { user } = req;
     const reqToAccept = await Friend.findOne({
       where: {
-        receiver_id: user.user_id,
-        requester_id: req.params.reqId,
+        receiverUserId: user.user_id,
+        usrUserId: req.params.reqId,
         status: 'P'
       }
     });
@@ -69,7 +82,7 @@ exports.rejectReq = async (req, res, next) => {
     console.log(e);
     res.status(500).send({ error: e.message });
   }
-}
+};
 
 //get friendlist
 exports.getFriends = async (req, res, next) => {
@@ -79,14 +92,15 @@ exports.getFriends = async (req, res, next) => {
       where: {
         status: 'A',
         [Op.or]: [
-          { requester_id: user.user_id },
-          { receiver_id: user.user_id }
+          { userUserId: user.user_id },
+          { receiverUserId: user.user_id }
         ]
-      }
+      },
+      include: User
     });
     res.send({ friends: friendList });
   } catch(e) {
     console.log(e);
     res.status(500).send({ error: e.message });
   }
-}
+};

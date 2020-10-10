@@ -6,7 +6,7 @@ const Jwttoken = require('../models/jwttoken');
 //get all users -- NO AUTH
 exports.getAllUsers = async (req, res, next) => {
     try {
-        const users = await User.findAll( );
+        const users = await User.findAll({ include: { all: true } });
         if (!users) throw new Error('no users found');
         res.send(users);
     }catch (e) {

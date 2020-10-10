@@ -24,8 +24,8 @@ const Friend = require('./models/friend');
 //-------START model relations----------
 
 //user-friend
-User.belongsToMany(User, { through: Friend, as: 'requester', foreignKey: 'requester_id' });
-User.belongsToMany(User, { through: Friend, as: 'receiver', foreignKey: 'receiver_id' });
+User.belongsToMany(User, { as: 'receiver', through: Friend });
+Friend.belongsTo(User);
 
 //user-post
 User.hasMany(Post);

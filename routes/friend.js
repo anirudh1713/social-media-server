@@ -19,4 +19,7 @@ route.post('/friends/reject/:reqId', auth, friendController.rejectReq);
 //get all friends
 route.get('/friends', auth, friendController.getFriends);
 
+//get all sent requests
+route.get('/friends/sent', auth, friendController.getAllSentRequest);
+
 module.exports = route;
