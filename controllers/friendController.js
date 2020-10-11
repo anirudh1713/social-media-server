@@ -7,10 +7,18 @@ exports.addNewFriend = async (req, res, next) => {
   try {
     const { user } = req;
     if (req.params.id == user.user_id) return res.status(400).send({ error: 'can not self friend' });
-    const response = await Friend.findAll({ where: { userUserId: req.params.id, receiverUserId: user.user_id } });
-    if (response.length > 0) return res.status(400).send({ error: 'already exist' });
-    const request = await user.addReceiver(req.params.id);
-    res.status(201).send({ request });
+    const response = await Friend.findOne({
+      where: {
+        userUserId: req.params.id, 
+        receiverUserId: user.user_id
+      }
+    });
+    if(!response) {
+      const request = await user.addReceiver(req.params.id);
+      return res.status(201).send({ request });
+    }else{
+      return res.status(400).send({ error: 'already exist' });
+    }
   } catch (e) {
     console.log(e);
     res.status(500).send({ error: e.message });
@@ -70,13 +78,12 @@ exports.rejectReq = async (req, res, next) => {
     const reqToAccept = await Friend.findOne({
       where: {
         receiverUserId: user.user_id,
-        usrUserId: req.params.reqId,
+        userUserId: req.params.reqId,
         status: 'P'
       }
     });
     if (!reqToAccept) return res.status(404).send({ error: 'not found' });
-    reqToAccept.status = 'R';
-    const rejected = await reqToAccept.save();
+    const rejected = await reqToAccept.destroy();
     res.send({ rejected });
   } catch (e) {
     console.log(e);
@@ -104,3 +111,26 @@ exports.getFriends = async (req, res, next) => {
     res.status(500).send({ error: e.message });
   }
 };
+
+//remove friend
+exports.removeFriend = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const friendShip = await Friend.findOne({
+      where: {
+        status: 'A',
+        [Op.or]: [
+          { userUserId: user.user_id, receiverUserId: req.params.id },
+          { userUserId: req.params.id, receiverUserId: user.user_id }
+        ]
+      }
+    });
+    console.log(friendShip);
+    if(!friendShip) return res.status(404).send({ error: 'not found' });
+    const remove = await friendShip.destroy();
+    res.send({ remove });
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({ error: e.message });
+  }
+}

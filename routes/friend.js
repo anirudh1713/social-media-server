@@ -22,4 +22,7 @@ route.get('/friends', auth, friendController.getFriends);
 //get all sent requests
 route.get('/friends/sent', auth, friendController.getAllSentRequest);
 
+//remove friend
+route.post('/friends/remove/:id', auth, friendController.removeFriend);
+
 module.exports = route;
