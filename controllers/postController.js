@@ -21,6 +21,7 @@ exports.addPost = async (req, res, next) => {
         }
       });
       blobWriter.on('error', (e) => {
+        console.log(e);
         res.status(500).send({ error: e });
       });
       blobWriter.on('finish', () => {
