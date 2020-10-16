@@ -2,6 +2,7 @@ const User =  require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Jwttoken = require('../models/jwttoken');
+const { Op } = require('sequelize');
 
 //get all users -- NO AUTH
 exports.getAllUsers = async (req, res, next) => {
@@ -60,7 +61,7 @@ const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET_URL_PROFILE);
 //profile image add
 exports.addProfileImage = async (req, res, next) => {
     try {
-        if (!req.file) res.status(400).send('no file found');
+        if (!req.file) return res.status(400).send('no file found');
         //name the file
         const blob = bucket.file(`profile_images/${req.user.user_id}_${req.file.originalname}`);
         //create blob in bucket referencing the file
@@ -111,3 +112,48 @@ exports.logoutUser = async (req, res, next) => {
         res.status(500).send({ error: e.message });
     }
 };
+
+//search users by usernames
+exports.searchUser = async (req, res, next) => {
+    try {
+        const { user } = req;
+        const searchResult = await User.findAll({ where: { username: { [Op.like]: `${req.query.username}%` } } });
+        console.log(searchResult);
+        res.send({ users: searchResult });
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({ error: e.message });
+    }
+}
+
+//update user data 
+exports.updateUserData = async (req, res, next) => {
+    try {
+        const { user } = req;
+        const { username, dob, gender, email } = req.body;
+        user.username = username;
+        user.dob = new Date(dob);
+        user.gender = gender;
+        user.email = email;
+        const updatedUser = await user.save();
+        res.send({ user: updatedUser });
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({ error: e.message });
+    }
+}
+
+//update password
+exports.updateUserPassword = async (req, res, next) => {
+    try {
+        const { user } = req;
+        let password = req.body.password;
+        password = await bcrypt.hash(password, 10);
+        user.password = password;
+        const updatedUser = await user.save();
+        res.send({ user: updatedUser });
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({ error: e.message });
+    }
+}

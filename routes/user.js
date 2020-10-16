@@ -6,6 +6,7 @@ const route = new express.Router();
 
 //controller imports
 const usersController = require('../controllers/userController');
+const { Router } = require('express');
 
 //get all users
 route.get('/users', usersController.getAllUsers);
@@ -33,10 +34,19 @@ const upload = new multer({
 //user add profileimage
 route.patch('/user/profileimage', auth, upload.single('profileImage'), usersController.addProfileImage);
 
-//get one user by id
-route.get('/user/:id', auth, usersController.getUserData);
-
 //logout user
 route.post('/user/logout', auth, usersController.logoutUser);
+
+//search user
+route.get('/search', auth, usersController.searchUser);
+
+//update user data
+route.patch('/user/data', auth, usersController.updateUserData);
+
+//update user password
+route.patch('/user/password', auth, usersController.updateUserPassword);
+
+//get one user by id
+route.get('/user/:id', auth, usersController.getUserData);
 
 module.exports = route;
