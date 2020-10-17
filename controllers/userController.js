@@ -147,8 +147,10 @@ exports.updateUserData = async (req, res, next) => {
 exports.updateUserPassword = async (req, res, next) => {
     try {
         const { user } = req;
-        let password = req.body.password;
-        password = await bcrypt.hash(password, 10);
+        let { password, newPassword } = req.body;
+        const validPass = await bcrypt.compare(password, user.password);
+        if (!validPass) return res.status(400).send({ error: 'invalid password.' });
+        password = await bcrypt.hash(newPassword, 10);
         user.password = password;
         const updatedUser = await user.save();
         res.send({ user: updatedUser });

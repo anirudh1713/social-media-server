@@ -41,7 +41,7 @@ exports.getAllPendingRequests = async (req, res, next) => {
 exports.getAllSentRequest = async (req, res, next) => {
   try {
     const { user } = req;
-    const sentRequest = await Friend.findAll({ where: { userUserId: user.user_id, status: 'P' } });
+    const sentRequest = await Friend.findAll({ where: { userUserId: user.user_id, status: 'P' }, include: { all: true } });
     if (!sentRequest) res.status(404).send({ error: 'no requests found' });
     res.send({ sentRequest });
   } catch (e) {
@@ -103,7 +103,7 @@ exports.getFriends = async (req, res, next) => {
           { receiverUserId: user.user_id }
         ]
       },
-      include: User
+      include: { all: true }
     });
     res.send({ friends: friendList });
   } catch(e) {
