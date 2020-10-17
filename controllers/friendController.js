@@ -95,6 +95,7 @@ exports.rejectReq = async (req, res, next) => {
 exports.getFriends = async (req, res, next) => {
   try{
     const { user } = req;
+    
     const friendList = await Friend.findAll({
       where: {
         status: 'A',
@@ -103,8 +104,9 @@ exports.getFriends = async (req, res, next) => {
           { receiverUserId: user.user_id }
         ]
       },
-      include: { all: true }
+      include: { all: true, nested: true }
     });
+
     res.send({ friends: friendList });
   } catch(e) {
     console.log(e);
@@ -134,3 +136,12 @@ exports.removeFriend = async (req, res, next) => {
     res.status(500).send({ error: e.message });
   }
 }
+
+exports.getAllFriends = async (req, res, next) => {
+  try {
+    
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({ error: e.message });
+  }
+};
