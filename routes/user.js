@@ -6,7 +6,6 @@ const route = new express.Router();
 
 //controller imports
 const usersController = require('../controllers/userController');
-const { Router } = require('express');
 
 //get all users
 route.get('/users', usersController.getAllUsers);
@@ -18,21 +17,32 @@ route.post('/signup', usersController.signUpUser);
 route.post('/signin', usersController.loginUser);
 
 //profile photo
-const upload = new multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 1 * 1024 * 1024
-  },
-  fileFilter: function(req, file, cb) {
-    if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){
-      return cb(new Error('please upload image only'));
+function uploadFile(req, res, next) {
+  const upload = multer({
+    limits: {
+      fileSize: 1 * 1024 * 1024
+    },
+    fileFilter: function (req, file, cb) {
+      if(!file.originalname.match(/\.(jpeg|jpg|png)$/)) {
+        cb('upload image only.', false);
+      }
+      cb(undefined, true);
     }
-    cb(undefined, true);
-  }
-});
+  }).single('profileImage');
+
+  upload(req, res, function (err) {
+    console.log(`\n\n\n ${err} \n\n\n`);
+    if (err instanceof multer.MulterError) {
+      return res.status(400).send({error: err});
+    } else if (err) {
+      return res.status(400).send({ error: err });
+    }
+    next();
+  })
+}
 
 //user add profileimage
-route.patch('/user/profileimage', auth, upload.single('profileImage'), usersController.addProfileImage);
+route.patch('/user/profileimage', auth, uploadFile, usersController.addProfileImage);
 
 //logout user
 route.post('/user/logout', auth, usersController.logoutUser);

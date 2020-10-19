@@ -13,7 +13,7 @@ function uploadFile(req, res, next) {
     },
     fileFilter: function (req, file, cb) {
       if(!file.originalname.match(/\.(jpeg|jpg|png)$/)) {
-        cb(undefined, false);
+        cb('upload image only.', false);
       }
       cb(undefined, true);
     }
