@@ -17,12 +17,15 @@ route.post('/friends/accept/:reqId', auth, friendController.acceptReq);
 route.post('/friends/reject/:reqId', auth, friendController.rejectReq);
 
 //get all friends
-route.get('/friends', auth, friendController.getFriends);
+route.get('/friends', auth, friendController.getAllFriends);
 
 //get all sent requests
 route.get('/friends/sent', auth, friendController.getAllSentRequest);
 
 //remove friend
 route.post('/friends/remove/:id', auth, friendController.removeFriend);
+
+//user + included
+route.get('/friends/get', auth, friendController.getAllFriends);
 
 module.exports = route;

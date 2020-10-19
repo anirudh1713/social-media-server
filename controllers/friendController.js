@@ -104,7 +104,7 @@ exports.getFriends = async (req, res, next) => {
           { receiverUserId: user.user_id }
         ]
       },
-      include: { all: true, nested: true }
+      include: { all: true }
     });
 
     res.send({ friends: friendList });
@@ -139,7 +139,10 @@ exports.removeFriend = async (req, res, next) => {
 
 exports.getAllFriends = async (req, res, next) => {
   try {
-    
+    const { user } = req;
+    const friends = await user.getReceiver();
+    if (!friends) return res.status(400).send({ error: 'no friends found' });
+    res.send({ friends });
   } catch (e) {
     console.log(e);
     res.status(500).send({ error: e.message });
