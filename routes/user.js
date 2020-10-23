@@ -23,7 +23,7 @@ function uploadFile(req, res, next) {
       fileSize: 1 * 1024 * 1024
     },
     fileFilter: function (req, file, cb) {
-      if(!file.originalname.match(/\.(jpeg|jpg|png)$/)) {
+      if(!file.originalname.match(/\.(jpeg|jpg|png)$/i)) {
         cb('upload image only.', false);
       }
       cb(undefined, true);
