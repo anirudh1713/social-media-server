@@ -181,8 +181,14 @@ exports.getAllPostsUser = async (req, res, next) => {
 //get all posts
 exports.getAllPosts = async (req, res, next) => {
   try {
-    const posts = await Post.findAll({ include: { all: true, nested: true } });
-    if (!posts) res.status(404).send({ error: 'posts not found' });
+    const limit = +req.query.limit;
+    const offset = +req.query.offset;
+    const posts = await Post.findAll({
+      include: { all: true, nested: true },
+      limit,
+      offset: offset * limit
+    });
+    if (!posts || posts.length <= 0) res.status(404).send({ error: 'posts not found' });
     res.send({ posts });
   } catch (error) {
     console.log(error);
